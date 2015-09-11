@@ -3,7 +3,6 @@ x2 = linspace(0,1,12);
 x =linspace(0,1,1000);
 exact = 1-(1-exp(-10))*x -exp(-10*x)
 plot (data)
-
 %x = 0:9;
 v(2:11) = data;
 v(1) = 0;
