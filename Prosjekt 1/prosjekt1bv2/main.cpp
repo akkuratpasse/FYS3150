@@ -5,6 +5,7 @@ using namespace arma;
 using namespace std;
 
 // Project 1 - Gaussian Elimination and Tridiagonal matrices
+// Part 1 - Building a tridiagonal system solver
 
 int main(int argc, char** argv)
 {
@@ -23,21 +24,21 @@ int main(int argc, char** argv)
     vec v = zeros<vec>(n);
     vec f = zeros<vec>(n);
 
-    cout << a << endl;
-    cout << b << endl;
-    cout << c << endl;
+//    cout << a << endl;    // Hva som skal streames
+//    cout << b << endl;
+//    cout << c << endl;
 
 
-    // Define value of righthand side   
+    // Define value of righthand side
     // b = h*h*fi, fi = 100*exp^(-10*x)
     for(int i=0; i < n; i++){
         f[i] = h*h*(100*exp(-10*h*(i+1)));
     }
+    cout << "f, righthandside" << endl;
     cout << f << endl;
 
 
     // Define value of lefthandside
-    // Ax = a(i)(i-1)*v(i-1)+ a(i)(i+1)*v(i+1)+a(i)(i)*v(i)
 
     // Forward Substitution
     for(int i=1; i < n; i++){
@@ -45,6 +46,7 @@ int main(int argc, char** argv)
         b[i] = b[i]-(m*c[i-1]); // b starter pa b2 https://en.wikipedia.org/wiki/Tridiagonal_matrix_algorithm
         f[i] = f[i]-(m*f[i-1]);
     }
+    cout << "Forward Substitution" << endl;
     cout << "b" << endl;
     cout << b << endl;
     cout << "f" << endl;
@@ -59,6 +61,7 @@ int main(int argc, char** argv)
     for(int i = n-1; i > 0; i--){
         v[i-1] = (f[i-1]- c[i-1]*v[i])/b[i-1];
     }
+    cout << "Backward Substitution" << endl;
     cout << "v, Numerical Solution" << endl;
     cout << v << endl;  // det som skrives ut er internal points
 
@@ -84,12 +87,11 @@ int main(int argc, char** argv)
     vec e = zeros<vec>(n);
     for(int i=0; i < n; i++){
     e[i] = log10(abs(((v[i]-u[i])/u[i]))); // vil vare lik
+    }
     cout << "e, Relative Error" << endl;
     cout << e << endl;
     e.save("e.txt");
-    }
 
-    // velger ett punkt for e og lager lokke for forksjellig n
-
-
+    return 0;
 }
+
