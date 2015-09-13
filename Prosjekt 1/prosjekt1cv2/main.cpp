@@ -106,7 +106,7 @@ int main(int argc, char** argv)
     }
     cout << "e2, Relative Error log10 with different h" << endl;
     cout << e2 << endl;
-    e2.save("e2.txt");
+    e2.save("e2.txt", raw_ascii);
 
     return 0;
 }

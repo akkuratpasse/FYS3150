@@ -90,7 +90,7 @@ int main(int argc, char** argv)
     }
     cout << "e, Relative Error" << endl;
     cout << e << endl;
-    e.save("e.txt");
+    e.save("E.txt", raw_ascii);
 
     return 0;
 }
