@@ -32,7 +32,9 @@ exact = 1-(1-exp(-10))*x -exp(-10*x);
 % Plot
 %plot(x2,v,x,exact)
 
+
 plot(x2,v10, 'r')
+text(pi,0,' \leftarrow sin(\pi)')
 hold on
 plot(x100,v100, 'g')
 hold on
