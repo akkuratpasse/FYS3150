@@ -12,7 +12,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
 // Numerical Solution
-    int n = 10;
+    int n = 1000;
 //    int n = 100;
 
     // Step length
@@ -94,10 +94,10 @@ int main(int argc, char** argv)
     cout << "e, Relative Error" << endl;
     cout << e << endl;
     e.save("E.txt", raw_ascii);
-
+//finish = clock( );
     //Solution by LU decomposition
 
-     start = clock();
+    start = clock();
 
         //int n = 4;
 
