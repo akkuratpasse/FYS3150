@@ -11,7 +11,7 @@ void JacobiRotate(mat &A, mat &R, int k, int l, int n);
 
 // Define a matrix A and a matrix R for the eigenvector
 
-int n = 4;
+int n = 10;
 int j = n;
 int i = n;
 
@@ -21,16 +21,65 @@ int main(int argc, char** argv){
     //X << 2 << 1 << endr
     //  << 2 << 1 << endr;
 
-    mat I = eye<mat>(i,j); // Identity matrix with Armadillo
-    cout << "I:" << endl << I << endl;
+    //mat I = eye<mat>(i,j); // Identity matrix with Armadillo
+    //cout << "I:" << endl << I << endl;
 
+// Equation
+
+    double rmax = 5.;   //Max values
+    double rmin = 0;   //Min values
+    double h = (rmax-rmin)/(n+1);   // Step length
+
+//    // Arbitrary value of r (ro)
+//    vec r = zeros<vec>(n);
+//    vec v = zeros<vec>(n);
+//    for (int i = 0; i<n; i++){
+//        r[i]= rmin + i*h;
+//        v[i]= r[i]*r[i];
+//    }
+//    cout << "ro, Dimensionless variable" << endl;
+//    cout << r << endl;
+//    cout << "v, Harmonic oscillator potential" << endl;
+//    cout << v << endl;
+
+//    // Define Diagonal matrix element, d
+//    mat A = zeros<mat>(n,n);
+//    for (int i = 0; i<n; i++){
+//        A.diag()[i] += 2/(h*h);     // on the diagonal
+//    }
+
+    // Define Diagonal matrix element, d
     mat A = zeros<mat>(n,n);
-    A.diag() += 2;      // pa diagonalen
-    A.diag(-1) += 1;    // rett under diagonalen
-    A.diag(1) += 1;     // rett over diagonalen
-    cout << "A:" << endl << A << endl;
+    vec r = zeros<vec>(n);
+    vec v = zeros<vec>(n);
+    for (int i = 0; i<n; i++){
+        r[i]= rmin + (i+1)*h;
+        v[i]= r[i]*r[i];
+        A.diag()[i] += 2/(h*h)+v[i];     // on the diagonal
+    }
+    cout << "ro, Dimensionless variable" << endl;
+    cout << r << endl;
+    cout << "v, Harmonic oscillator potential" << endl;
+    cout << v << endl;
 
-    mat R = randu<mat>(i,j); // Custom Identity matrix R
+    // Define Non-diagonal matrix element, e
+    double e = -(1/(h*h));
+    A.diag(-1) += e;    // rett below diagonalen
+    A.diag(1) += e;    // rett over diagonalen
+
+    // lage vektor
+    vec E = zeros<vec>(n);
+    eig_sym( E, A );
+    cout << E[0] << endl;
+
+//    mat A = zeros<mat>(n,n);
+//    A.diag() += 2;      // on the diagonal
+//    A.diag(-1) += -1;    // rett below diagonalen
+//    A.diag(1) += -1;     // rett over diagonalen
+    cout << "A:" << endl << A << endl;
+    A.save("A.txt", raw_ascii);
+
+    mat R = zeros<mat>(i,j); // Custom Identity matrix R
     for (i=0;i<n;i++){
         for (j=0;j<n;j++){
             if (i == j) {
@@ -40,9 +89,7 @@ int main(int argc, char** argv){
                 }
             }
     }
-    cout << "R:" << endl << R << endl;
-
-
+    //cout << "R:" << endl << R << endl;
 
     //
     double tolerance = 1.0E-10;
@@ -60,15 +107,20 @@ int main(int argc, char** argv){
     }
     std:: cout << "Number of iterations:" << iterations << "/n" << endl;
 
-    cout << "A:" << endl << A << endl;
+    cout << "ARotated:" << endl << A << endl;
+    A.save("ARotated.txt", raw_ascii);
+    mat B = sort(A.diag());
 
+    cout << "B[0]" << B[0] << endl;
+    cout << "B[1]" << B[1] << endl;
+    cout << "B[2]" << B[2] << endl;
     return 0;
 }
 
 // Offdiagonal function
 double offdiag(mat A, int &p, int &q, int n)
 {
-    double max;
+    double max=0;
     for (int i=0; i<n; i++){
         for (int j=i+1; j<n; j++){
         {
@@ -92,9 +144,9 @@ void JacobiRotate(mat &A, mat &R, int k, int l, int n)
     double s, c;
     if (A(k,l) != 0.0){
         double t, tau;
-        tau = (A(1,1) - A(k,k))/(2*A(k,1));
+        tau = (A(l,l) - A(k,k))/(2*A(k,l)); // Tau
 
-        if (tau >= 0){
+        if (tau > 0){
             t = 1.0/(tau +sqrt(1.0 + tau*tau));
         } else {
             t = -1.0/(-tau +sqrt(1.0 + tau*tau));
@@ -103,17 +155,19 @@ void JacobiRotate(mat &A, mat &R, int k, int l, int n)
         s = c*t;
     } else {
         c = 1.0;
-        s = 1.0;
+        s = 0.0;
     }
     double a_kk, a_ll, a_ik, a_il, r_ik, r_il;
     a_kk = A(k,k);
     a_ll = A(l,l);
     A(k,k) = c*c*a_kk - 2.0*c*s*A(k,l) + s*s*a_ll;
     A(l,l) = s*s*a_kk + 2.0*c*s*A(k,l) + c*c*a_ll;
+
+    double A_kl = (a_kk - a_ll)*c*s + A(k,l)*(c*c-s*s);
     A(k,l) = 0.0;   //
     A(l,k) = 0.0;   //
     for (int i = 0; i < n; i++){
-        if (i != k && i != 1){
+        if (i != k && i != l){
             a_ik = A(i,k);
             a_il = A(i,l);
             A(i,k) = c*a_ik - s*a_il;
