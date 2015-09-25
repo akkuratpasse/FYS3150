@@ -1,52 +1,32 @@
+#include <cmath>
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <armadillo>
+#include <iomanip>
 #include "../libraries/lib.h"
 using namespace  std;
 using namespace arma;
+// output file as global variable
+ofstream ofile;
 
 // Function declaration
 double offdiag(mat A, int &p, int &q, int n);
 void JacobiRotate(mat &A, mat &R, int k, int l, int n);
 
-
 // Define a matrix A and a matrix R for the eigenvector
 
-int n = 10;
+int n = 2;
 int j = n;
 int i = n;
 
 int main(int argc, char** argv){
-    // Creating matrix A and identity matrix R
-    //mat X;  //  X test
-    //X << 2 << 1 << endr
-    //  << 2 << 1 << endr;
 
-    //mat I = eye<mat>(i,j); // Identity matrix with Armadillo
-    //cout << "I:" << endl << I << endl;
+ // Equation
 
-// Equation
-
-    double rmax = 5.;   //Max values
+    double rmax = 10.;   //Max values
     double rmin = 0;   //Min values
     double h = (rmax-rmin)/(n+1);   // Step length
-
-//    // Arbitrary value of r (ro)
-//    vec r = zeros<vec>(n);
-//    vec v = zeros<vec>(n);
-//    for (int i = 0; i<n; i++){
-//        r[i]= rmin + i*h;
-//        v[i]= r[i]*r[i];
-//    }
-//    cout << "ro, Dimensionless variable" << endl;
-//    cout << r << endl;
-//    cout << "v, Harmonic oscillator potential" << endl;
-//    cout << v << endl;
-
-//    // Define Diagonal matrix element, d
-//    mat A = zeros<mat>(n,n);
-//    for (int i = 0; i<n; i++){
-//        A.diag()[i] += 2/(h*h);     // on the diagonal
-//    }
 
     // Define Diagonal matrix element, d
     mat A = zeros<mat>(n,n);
@@ -57,10 +37,10 @@ int main(int argc, char** argv){
         v[i]= r[i]*r[i];
         A.diag()[i] += 2/(h*h)+v[i];     // on the diagonal
     }
-    cout << "ro, Dimensionless variable" << endl;
-    cout << r << endl;
-    cout << "v, Harmonic oscillator potential" << endl;
-    cout << v << endl;
+    //cout << "ro, Dimensionless variable" << endl;
+    //cout << r << endl;
+    //cout << "v, Harmonic oscillator potential" << endl;
+    //cout << v << endl;
 
     // Define Non-diagonal matrix element, e
     double e = -(1/(h*h));
@@ -70,14 +50,10 @@ int main(int argc, char** argv){
     // lage vektor
     vec E = zeros<vec>(n);
     eig_sym( E, A );
-    cout << E[0] << endl;
+    //cout << "E0" << E[0] << endl;
 
-//    mat A = zeros<mat>(n,n);
-//    A.diag() += 2;      // on the diagonal
-//    A.diag(-1) += -1;    // rett below diagonalen
-//    A.diag(1) += -1;     // rett over diagonalen
     cout << "A:" << endl << A << endl;
-    A.save("A.txt", raw_ascii);
+    //A.save("A.txt", raw_ascii);
 
     mat R = zeros<mat>(i,j); // Custom Identity matrix R
     for (i=0;i<n;i++){
@@ -89,14 +65,11 @@ int main(int argc, char** argv){
                 }
             }
     }
-    //cout << "R:" << endl << R << endl;
 
-    //
     double tolerance = 1.0E-10;
     int iterations = 0;  // total iterations
     double maxnondiag = offdiag(A, i, j ,n);
     double maxiter = (double) n * (double) n * double (n); // 64
-
     while (maxnondiag > tolerance && iterations <= maxiter)
     {
         int p, q;
@@ -108,7 +81,7 @@ int main(int argc, char** argv){
     std:: cout << "Number of iterations:" << iterations << "/n" << endl;
 
     cout << "ARotated:" << endl << A << endl;
-    A.save("ARotated.txt", raw_ascii);
+    //A.save("ARotated.txt", raw_ascii);
     mat B = sort(A.diag());
 
     cout << "B[0]" << B[0] << endl;
@@ -116,7 +89,36 @@ int main(int argc, char** argv){
     cout << "B[2]" << B[2] << endl;
 
 
-    return 0;
+
+// .txt file start
+  ofstream writer( "JacobisRotation.txt" , ios::app ) ;
+
+  if( ! writer )
+  {
+    cout << "Error opening file for output" << endl ;
+    return -1 ;
+  }
+
+
+  //   Read to file
+
+  writer << "RESULTS Project 2 Jacobi's Rotation Algorithm:" << endl;
+  writer << setiosflags(ios::showpoint | ios::uppercase);
+  writer <<"N = " << setw(15) << n << endl;
+  writer <<"R min = " << setw(15) << setprecision(4) << rmin << endl;
+  writer <<"R max = " << setw(15) << setprecision(4) << rmax << endl;
+  writer << "Number of iterations:" << setw(5) << iterations << endl;
+  writer << "Three lowest eigenvalues from rotated matrix:" << endl;
+  writer << "B[0]  = " << setw(15) << setprecision(5) << B[0] << endl;
+  writer << "B[1]  = " << setw(15) << setprecision(5) << B[1] << endl;
+  writer << "B[2]  = " << setw(15) << setprecision(5) << B[2] << endl;
+  writer << "" << endl;
+
+  writer.close() ;
+
+// .txt file writer finished
+
+  return 0 ;
 }
 
 // Offdiagonal function
@@ -185,3 +187,4 @@ void JacobiRotate(mat &A, mat &R, int k, int l, int n)
     }
     return;
 }
+
