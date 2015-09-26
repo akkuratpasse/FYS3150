@@ -13,10 +13,11 @@ ofstream ofile;
 // Function declaration
 double offdiag(mat A, int &p, int &q, int n);
 void JacobiRotate(mat &A, mat &R, int k, int l, int n);
+void output(int n, double rmin, double rmax, int iterations, mat &B);   // write to .txt function
 
 // Define a matrix A and a matrix R for the eigenvector
 
-int n = 2;
+int n = 50; // Size of matrix
 int j = n;
 int i = n;
 
@@ -24,7 +25,7 @@ int main(int argc, char** argv){
 
  // Equation
 
-    double rmax = 10.;   //Max values
+    double rmax = 5.;   //Max values
     double rmin = 0;   //Min values
     double h = (rmax-rmin)/(n+1);   // Step length
 
@@ -67,7 +68,7 @@ int main(int argc, char** argv){
     }
 
     double tolerance = 1.0E-10;
-    int iterations = 0;  // total iterations
+    int iterations = 0;  // Iterations
     double maxnondiag = offdiag(A, i, j ,n);
     double maxiter = (double) n * (double) n * double (n); // 64
     while (maxnondiag > tolerance && iterations <= maxiter)
@@ -82,43 +83,21 @@ int main(int argc, char** argv){
 
     cout << "ARotated:" << endl << A << endl;
     //A.save("ARotated.txt", raw_ascii);
-    mat B = sort(A.diag());
 
-    cout << "B[0]" << B[0] << endl;
-    cout << "B[1]" << B[1] << endl;
-    cout << "B[2]" << B[2] << endl;
+    mat B = sort(A.diag());     // Eigenvalues Sorted Low to high
+//    cout << "Jacobi Rotaded Matrix, Eigenvalue sorted low to high: " << endl;
+//    cout << "B[0]" << B[0] << endl;
+//    cout << "B[1]" << B[1] << endl;
+//    cout << "B[2]" << B[2] << endl;
 
-
-
-// .txt file start
-  ofstream writer( "JacobisRotation.txt" , ios::app ) ;
-
-  if( ! writer )
-  {
-    cout << "Error opening file for output" << endl ;
-    return -1 ;
-  }
+    cout << "Eigenvalues, sorted low to high after " << iterations << " Jacobi Rotations" << endl;
+    for(int i = 0; i < 3; i++) {
+      cout << setw(15) << setprecision(6) << B[i] << endl;
+    }
 
 
-  //   Read to file
+    output(n,rmin, rmax, iterations, B);     // Write to .txt
 
-  writer << "RESULTS Project 2 Jacobi's Rotation Algorithm:" << endl;
-  writer << setiosflags(ios::showpoint | ios::uppercase);
-  writer <<"N = " << setw(15) << n << endl;
-  writer <<"R min = " << setw(15) << setprecision(4) << rmin << endl;
-  writer <<"R max = " << setw(15) << setprecision(4) << rmax << endl;
-  writer << "Number of iterations:" << setw(5) << iterations << endl;
-  writer << "Three lowest eigenvalues from rotated matrix:" << endl;
-  writer << "B[0]  = " << setw(15) << setprecision(5) << B[0] << endl;
-  writer << "B[1]  = " << setw(15) << setprecision(5) << B[1] << endl;
-  writer << "B[2]  = " << setw(15) << setprecision(5) << B[2] << endl;
-  writer << "" << endl;
-
-  writer.close() ;
-
-// .txt file writer finished
-
-  return 0 ;
 }
 
 // Offdiagonal function
@@ -188,3 +167,28 @@ void JacobiRotate(mat &A, mat &R, int k, int l, int n)
     return;
 }
 
+// Write to file
+void output(int n, double rmin, double rmax, int iterations, mat &B)
+{
+    // .txt file start
+      ofstream writer( "JacobisRotation.txt" , ios::app ) ;
+
+      //   Read to file
+
+      writer << "RESULTS Project 2 Jacobi's Rotation Algorithm:" << endl;
+      writer << setiosflags(ios::showpoint | ios::uppercase);
+      writer <<"N = " << setw(15) << n << endl;
+      writer <<"R min = " << setw(15) << setprecision(4) << rmin << endl;
+      writer <<"R max = " << setw(15) << setprecision(4) << rmax << endl;
+      writer << "Number of iterations:" << setw(5) << iterations << endl;
+      writer << "Three lowest eigenvalues from rotated matrix:" << endl;
+      for(int i = 0; i < 3; i++) {
+        writer << setw(15) << setprecision(8) << B[i] << endl;
+      }
+      writer << "" << endl;
+
+      writer.close() ;
+
+    // .txt file writer finished
+
+}
