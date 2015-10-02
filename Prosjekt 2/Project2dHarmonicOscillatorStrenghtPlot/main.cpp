@@ -13,21 +13,21 @@ ofstream ofile;
 // Function declaration
 double offdiag(mat A, int &p, int &q, int n);
 void JacobiRotate(mat &A, mat &R, int k, int l, int n);
-void output(int n, double rmin, double rmax, int iterations, mat &B);   // write to .txt function
+void output(int n, double rmin, double rmax, double wr, int iterations, mat &B);   // write to .txt function
 
 // Define a matrix A and a matrix R for the eigenvector
 
-int n = 1000; // Size of matrix
+int n = 10; // Size of matrix    // Need to change
 int j = n;
 int i = n;
 
 int main(int argc, char** argv){
 
  // Equation
-
-    double rmax = 5.;   //Max values
+    double rmax = 10.;   //Max values  // Need to change
     double rmin = 0;   //Min values
     double h = (rmax-rmin)/(n+1);   // Step length
+    double wr = 0.25;   // Parameter strength of the oscillator potential
 
     // Define Diagonal matrix element, d
     mat A = zeros<mat>(n,n);
@@ -35,7 +35,8 @@ int main(int argc, char** argv){
     vec v = zeros<vec>(n);
     for (int i = 0; i<n; i++){
         r[i]= rmin + (i+1)*h;
-        v[i]= r[i]*r[i];                // Potential
+        //v[i]= r[i]*r[i]; // Potential
+        v[i] = wr*wr*r[i]*r[i]+(1/r[i]);    // New Potential
         A.diag()[i] += 2/(h*h)+v[i];     // on the diagonal
     }
     //cout << "ro, Dimensionless variable" << endl;
@@ -48,13 +49,31 @@ int main(int argc, char** argv){
     A.diag(-1) += e;    // rett below diagonalen
     A.diag(1) += e;    // rett over diagonalen
 
-    // lage vektor
-    vec E = zeros<vec>(n);
-    eig_sym( E, A );
-    //cout << "E0" << E[0] << endl;
-
     cout << "A:" << endl << A << endl;
     //A.save("A.txt", raw_ascii);
+
+    // Armadillo function finding Eigenvalue for mat A
+//    vec E = zeros<vec>(n);  // lage vektor for Eigenvalue
+//    eig_sym( E, A );
+
+//    cout << "E0 " << E[0] << endl;      //E0 1.24981 n=100
+//    cout << "E1 " << E[1] << endl;      //E1 2.18925 n=100
+
+    // Armadillo function finding Eigenvalue, Eigenvector for mat A)
+    vec E = zeros<vec>(n);  // Armadillo, lage vektor for Eigenvalue
+    mat Z = zeros<mat>(n,n);  // Armadillo, lage mat for Eigenvektor
+    eig_sym(E, Z, A);
+    cout << "Armadillo E0 " << E[0] << endl;      //E0 1.24981 n=100
+    cout << "Armadillo E1 " << E[1] << endl;      //E1 2.18925 n=100
+    cout << "Armadillo E2 " << E[2] << endl;
+    cout << "Armadillo Eigenvektor V0 " << Z.col(0) << endl;
+//    cout << "V1 " << Z.col(1) << endl;
+//    E.save("Earmadillo.txt", raw_ascii);
+//    Z.save("Zarmadillo.txt", raw_ascii);
+
+    // Save files for Plot
+    Z.save("ZArmadilloN10.txt", raw_ascii);    // Armadillo Eigenvectors used to plot
+    r.save("rhoN10.txt", raw_ascii);           // rho used to plot
 
     mat R = zeros<mat>(i,j); // Custom Identity matrix R
     for (i=0;i<n;i++){
@@ -84,19 +103,15 @@ int main(int argc, char** argv){
     cout << "ARotated:" << endl << A << endl;
     //A.save("ARotated.txt", raw_ascii);
 
+    // Eigenvalues
     mat B = sort(A.diag());     // Eigenvalues Sorted Low to high
-//    cout << "Jacobi Rotaded Matrix, Eigenvalue sorted low to high: " << endl;
-//    cout << "B[0]" << B[0] << endl;
-//    cout << "B[1]" << B[1] << endl;
-//    cout << "B[2]" << B[2] << endl;
-
     cout << "Eigenvalues, sorted low to high after " << iterations << " Jacobi Rotations" << endl;
     for(int i = 0; i < 3; i++) {
       cout << setw(15) << setprecision(6) << B[i] << endl;
     }
 
 
-    output(n,rmin, rmax, iterations, B);     // Write to .txt
+    output(n,rmin, rmax, wr, iterations, B);     // Write to .txt
 
 }
 
@@ -163,23 +178,25 @@ void JacobiRotate(mat &A, mat &R, int k, int l, int n)
         r_il = R(i,l);
         R(i,k) = c*r_ik - s*r_il;
         R(i,l) = c*r_il + s*r_ik;
+
     }
     return;
 }
 
 // Write to file
-void output(int n, double rmin, double rmax, int iterations, mat &B)
+void output(int n, double rmin, double rmax, double wr, int iterations, mat &B)
 {
     // .txt file start
-      ofstream writer( "JacobisRotation.txt" , ios::app ) ;
+      ofstream writer( "HarmonicOscillatorPotential.txt" , ios::app ) ;
 
       //   Read to file
 
-      writer << "RESULTS Project 2 Jacobi's Rotation Algorithm:" << endl;
+      writer << "RESULTS Project 2c Harmonic Oscillator Potential" << endl;
       writer << setiosflags(ios::showpoint | ios::uppercase);
-      writer <<"N = " << setw(15) << n << endl;
-      writer <<"R min = " << setw(15) << setprecision(4) << rmin << endl;
-      writer <<"R max = " << setw(15) << setprecision(4) << rmax << endl;
+      writer << "N = " << setw(15) << n << endl;
+      writer << "R min = " << setw(15) << setprecision(4) << rmin << endl;
+      writer << "R max = " << setw(15) << setprecision(4) << rmax << endl;
+      writer << "Strenght of the Oscillator Potential = " << setw(5) << setprecision(2) << wr << endl;
       writer << "Number of iterations:" << setw(5) << iterations << endl;
       writer << "Three lowest eigenvalues from rotated matrix:" << endl;
       for(int i = 0; i < 3; i++) {
@@ -190,5 +207,4 @@ void output(int n, double rmin, double rmax, int iterations, mat &B)
       writer.close() ;
 
     // .txt file writer finished
-
 }
