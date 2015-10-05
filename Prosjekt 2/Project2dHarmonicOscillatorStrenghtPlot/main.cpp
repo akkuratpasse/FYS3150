@@ -17,7 +17,7 @@ void output(int n, double rmin, double rmax, double wr, int iterations, mat &B);
 
 // Define a matrix A and a matrix R for the eigenvector
 
-int n = 10; // Size of matrix    // Need to change
+int n = 100; // Size of matrix    // Need to change
 int j = n;
 int i = n;
 
@@ -27,7 +27,7 @@ int main(int argc, char** argv){
     double rmax = 10.;   //Max values  // Need to change
     double rmin = 0;   //Min values
     double h = (rmax-rmin)/(n+1);   // Step length
-    double wr = 0.25;   // Parameter strength of the oscillator potential
+    double wr = 0.01;   // Parameter strength of the oscillator potential
 
     // Define Diagonal matrix element, d
     mat A = zeros<mat>(n,n);
@@ -72,8 +72,8 @@ int main(int argc, char** argv){
 //    Z.save("Zarmadillo.txt", raw_ascii);
 
     // Save files for Plot
-    Z.save("ZArmadilloN10.txt", raw_ascii);    // Armadillo Eigenvectors used to plot
-    r.save("rhoN10.txt", raw_ascii);           // rho used to plot
+    Z.save("ZArmadilloN100_Omega001.txt", raw_ascii);    // Armadillo Eigenvectors used to plot
+    r.save("rhoN100_Omega001.txt", raw_ascii);           // rho used to plot
 
     mat R = zeros<mat>(i,j); // Custom Identity matrix R
     for (i=0;i<n;i++){
@@ -187,7 +187,7 @@ void JacobiRotate(mat &A, mat &R, int k, int l, int n)
 void output(int n, double rmin, double rmax, double wr, int iterations, mat &B)
 {
     // .txt file start
-      ofstream writer( "HarmonicOscillatorPotential.txt" , ios::app ) ;
+      ofstream writer( "HarmonicOscillatorPotential100_Omega001.txt" , ios::app ) ;
 
       //   Read to file
 

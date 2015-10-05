@@ -1,0 +1,11 @@
+RESULTS Project 2c Harmonic Oscillator Potential
+N =             100
+R min =           0.000
+R max =           10.00
+Strenght of the Oscillator Potential =  0.25
+Number of iterations:17298
+Three lowest eigenvalues from rotated matrix:
+      1.2498106
+      2.1892502
+      3.1485086
+
