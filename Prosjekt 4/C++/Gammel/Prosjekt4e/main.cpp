@@ -2,8 +2,10 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <armadillo>
 #include "../libraries/lib.h"
 using namespace  std;
+using namespace arma;
 
 // output file as global variable
 ofstream ofile;
@@ -23,10 +25,13 @@ int main()
 {
     // initial variables
     int mcs = 10000; // Number of Monte Carlo trials
-    int n_spins = 40; // Lattice size or number of spins (x and y equal)
-    double initial_temp = 1.; //
-    double final_temp = 2.5; //
-    double temp_step = 0.5; //
+    int n_spins = 80; // Lattice size or number of spins (x and y equal)
+    int n_temp = 40; // Number of temperatures
+
+    double initial_temp = 2.; //
+    double final_temp = 2.4; //
+    //double temp_step = 0.5; //
+    double temp_step = (final_temp - initial_temp)/(n_temp-1);
     double temperature;
 
     int **spin_matrix;
@@ -34,6 +39,26 @@ int main()
 
     spin_matrix = (int**) matrix(n_spins, n_spins, sizeof(int));
     long idum = -1; // random starting point
+
+    // Lager vec for Matlab
+
+    vec t = zeros<vec>(n_temp); // Temp
+    vec AM = zeros<vec>(n_temp); //
+
+    vec AE = zeros<vec>(n_temp);
+    vec AE2 = zeros<vec>(n_temp);
+    //vec AM = zeros<vec>(n_temp);
+    vec AM2 = zeros<vec>(n_temp);
+    vec AabsM = zeros<vec>(n_temp);
+
+    vec Evariance = zeros<vec>(n_temp);
+    vec Mvariance = zeros<vec>(n_temp);
+    vec M2variance = zeros<vec>(n_temp);
+
+    vec HeatCv = zeros<vec>(n_temp);
+    vec Susceptibility = zeros<vec>(n_temp);
+
+    int counter = 0;  // Used to count temp
 
     for ( temperature = initial_temp; temperature <= final_temp; temperature+=temp_step){
         //    initialise energy and magnetization
@@ -54,42 +79,54 @@ int main()
             average[2] += M;    average[3] += M*M; average[4] += fabs(M);
         }
         //cout << temperature << endl; // temperature range in loop
+        t(counter) = temperature;
+        AE(counter) = average[0]/mcs;
+        AE2(counter) = average[1]/mcs;
+        AM(counter) = average[2]/mcs;
+        AM2(counter) = average[3]/mcs;
+        AabsM(counter) = average[4]/mcs;
+
+        Evariance(counter) = (AE2(counter)- AE(counter)*AE(counter))/n_spins/n_spins;
+        Mvariance(counter) = (AM2(counter) - AM(counter)*AM(counter))/n_spins/n_spins;
+        M2variance(counter) = (AM2(counter) - AabsM(counter)*AabsM(counter))/n_spins/n_spins;
+
+        HeatCv(counter) = Evariance(counter)/t(counter)/t(counter);
+        Susceptibility(counter) = M2variance(counter)/t(counter);
+
+        counter ++; //
+
     }
+
+    t.save("t.txt", raw_ascii);
+    //AM.save("AM.txt", raw_ascii);
+    AE.save("AE80.txt", raw_ascii);
+    //AE2.save("AE2.txt", raw_ascii);
+    //AM2.save("AM2.txt", raw_ascii);
+    AabsM.save("AabsM80.txt", raw_ascii);
+
+    //Evariance.save("Evariance.txt", raw_ascii);
+    //Mvariance.save("Mvariance.txt", raw_ascii);
+    //M2variance.save("M2variance.txt", raw_ascii);
+
+    HeatCv.save("HeatCv80.txt", raw_ascii);
+    Susceptibility.save("Susceptibility80.txt", raw_ascii);
+
 
     output(n_spins, mcs, temperature, average);     // Write to .txt
     cout << "Lattice size: " << n_spins << endl;
     cout << "Mcs: " << mcs << endl;
     cout << "Average: " << *average << endl;
-    //cout << "Temp " << temperature << endl;  // temperature after loop: temperature+=temp_step
+    cout << "Temp " << temperature << endl;  // temperature after loop: temperature+=temp_step
 
     return 0;
 
 }
 
 
-// Write to file
-//void output(int n_spins, int mcs, double temperature, double *average)
-//{
-//    // .txt file start
-//    ofstream writer( "Prosjekt 4b.txt" , ios::app ) ;
-//    //   Read to file
-//    writer << "RESULTS Prosjekt 4b:" << endl;
-//    writer << "Lattice size: " << n_spins << endl;
-//    writer << "Mcs: " << mcs << endl;
-//    writer << "Temperature: " << temperature << endl;
-//    writer << "Average: " << *average << endl;
-//    writer << ""  << endl;
-
-//    writer.close() ;
-
-//    // .txt file writer finished
-
-//}
-
 void output(int n_spins, int mcs, double temperature, double *average)
 {
     // .txt file start
-    ofstream writer( "Prosjekt 4b.txt" , ios::app ) ;
+    ofstream writer( "Prosjekt 4bV5.txt" , ios::app ) ;
     //   Read to file
     writer << "RESULTS Prosjekt 4b:" << endl;
     writer << "Lattice size: " << n_spins << endl;
@@ -114,8 +151,8 @@ void output(int n_spins, int mcs, double temperature, double *average)
     writer << "Temperature: " << temperature << endl;
     writer << "Average: " << *average << endl;
     writer << "Eaverage/n_spins/n_spins " << Eaverage/n_spins/n_spins << endl;
-    writer << "Evariance/temperature/temperature " << Evariance/temperature/temperature << endl;
-    writer << "M2variance/temperature " << M2variance/temperature << endl;
+    writer << "HeatCv = Evariance/temperature/temperature " << Evariance/temperature/temperature << endl;
+    writer << "Susceptibility = M2variance/temperature " << M2variance/temperature << endl;
     writer << "Mabsaverage/n_spins/n_spins " << Mabsaverage/n_spins/n_spins << endl;
     writer << ""  << endl;
 
@@ -137,15 +174,6 @@ void initialize(int n_spins, double temperature, int **spin_matrix,
             M +=  (double) spin_matrix[y][x];
         }
     }
-
-//    for(int y =0; y < n_spins; y++) {
-//        for (int x= 0; x < n_spins; x++){
-//            if (temperature < 1.5 ) spin_matrix[y][x] = 1;
-//            //low temperatures, $T <1.5$, all spins are 1
-//            // spin orientation for the ground state
-//            M +=  (double) spin_matrix[y][x];
-//        }
-//    }
 
     // setup initial energy
     for(int y =0; y < n_spins; y++) {
@@ -176,14 +204,6 @@ void Metropolis(int n_spins, long& idum, int **spin_matrix, double& E, double&M,
             M += (double) 2*spin_matrix[iy][ix];
             E += (double) deltaE;
         }
-
-//        if(deltaE < 4 || ran1(&idum) <= w[deltaE+8]);
-//        {
-//            spin_matrix[iy][ix] *= -1;  // flip one spin and accept new spin config
-//            M += (double) 2*spin_matrix[iy][ix];
-//            E += (double) deltaE;
-//        }
-
 
     }
 } // end of Metropolis sampling over spins
