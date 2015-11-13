@@ -1,0 +1,11 @@
+t = load('/Users/AndreasM/ProsjekterQt/build-Prosjekt4e-Desktop_Qt_5_5_0_clang_64bit-Release/t_Spins20.txt');
+AE20 = load('/Users/AndreasM/ProsjekterQt/build-Prosjekt4e-Desktop_Qt_5_5_0_clang_64bit-Release/AE20.txt');
+AE40 
+
+plot(t, AE20, 'r')
+hold on
+
+title('\langle E\rangle: mcs = 10000, n temp = 20')
+xlabel('K_bT') % x-axis label
+ylabel('\langle E\rangle') % y-axis label
+legend('AE20')
