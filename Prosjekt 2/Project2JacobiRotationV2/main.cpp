@@ -17,7 +17,7 @@ void output(int n, double rmin, double rmax, int iterations, mat &B);   // write
 
 // Define a matrix A and a matrix R for the eigenvector
 
-int n = 1000; // Size of matrix
+int n = 100; // Size of matrix
 int j = n;
 int i = n;
 
